@@ -51,7 +51,7 @@ jobs:
 
       - name: Read version from release.json
         uses: notiz-dev/github-action-json-property@release
-        id: gorkscrew_version
+        id: acervus_version
         with:
           path: 'release.json'
           prop_path: 'version'
@@ -66,10 +66,11 @@ jobs:
       - name: Build acervus binary
         uses: wangyoucao577/go-release-action@master
         with:
-          github_token: ${{ secrets.TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
           goversion: "https://dl.google.com/go/go${{ steps.go_version.outputs.prop }}.linux-amd64.tar.gz"
+          release_tag: ${{ steps.acervus_version.outputs.prop }}
           # if we don't want to use default "go build" command, we can modify it like this:
           # build_command: make
           # binary_name: acervus
