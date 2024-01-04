@@ -17,13 +17,12 @@ jobs:
         with:
           file_path: 'release.json'
       - run: |
-          echo ${{ steps.release_json.outputs.version }}
-          echo ${{ steps.release_json.outputs.go_version }}
+          echo acervus version: ${{ steps.release_json.outputs.version }}
       - name: Create release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: "v${{ steps.package_info.outputs.prop }}"
+          tag_name: "v${{ steps.release_json.outputs.version }}"
           name: Release v${{ steps.release_json.outputs.prop }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -51,8 +50,8 @@ jobs:
         with:
           file_path: 'release.json'
       - run: |
-          echo ${{ steps.release_json.outputs.version }}
-          echo ${{ steps.release_json.outputs.go_version }}
+          echo acervus version: ${{ steps.release_json.outputs.version }}
+          echo go version: ${{ steps.release_json.outputs.go_version }}
       - name: Build acervus binary
         uses: wangyoucao577/go-release-action@master
         with:
