@@ -5,20 +5,18 @@ on:
     branches: [ main ]
 
 jobs:
-  create_release:
-    name: Create release
+  build_and_release:
+    name: Build and Release
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
-
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Read release.json
         uses: notiz-dev/github-action-json-property@release
         id: package_info
         with:
           path: 'release.json'
           prop_path: 'version'
-
       - name: Show version number
         run: echo "Version is ${{ steps.package_info.outputs.prop }}"
 
@@ -33,7 +31,7 @@ jobs:
   build:
     needs:
       - create_release
-    name: build_to_release
+    name: Build
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -46,23 +44,20 @@ jobs:
           - goarch: arm64
             goos: windows
     steps:
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
-
-      - name: Read version from release.json
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Read acervus_version from release.json
         uses: notiz-dev/github-action-json-property@release
         id: acervus_version
         with:
           path: 'release.json'
           prop_path: 'version'
-
       - name: Read go_version from release.json
         uses: notiz-dev/github-action-json-property@release
         id: go_version
         with:
           path: 'release.json'
           prop_path: 'go_version'
-
       - name: Build acervus binary
         uses: wangyoucao577/go-release-action@master
         with:
@@ -73,4 +68,4 @@ jobs:
           release_tag: "v${{ steps.acervus_version.outputs.prop }}"
           # if we don't want to use default "go build" command, we can modify it like this:
           # build_command: make
-          # binary_name: acervus
+          binary_name: acervus
