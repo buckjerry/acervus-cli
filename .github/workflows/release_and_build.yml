@@ -12,22 +12,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Read release.json
-        uses: notiz-dev/github-action-json-property@release
-        id: package_info
+        id: release_json
+        uses: ActionsTools/read-json-action@main
         with:
-          path: 'release.json'
-          prop_path: 'version'
-      - name: Show version number
-        run: echo "Version is ${{ steps.package_info.outputs.prop }}"
-
+          file_path: 'release.json'
+      - run: |
+          echo ${{ steps.release_json.outputs.version }}
+          echo ${{ steps.release_json.outputs.go_version }}
       - name: Create release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: "v${{ steps.package_info.outputs.prop }}"
-          release_name: Release v${{ steps.package_info.outputs.prop }}
+          name: Release v${{ steps.release_json.outputs.prop }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
   build:
     needs:
       - create_release
@@ -46,26 +45,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Read acervus_version from release.json
-        uses: notiz-dev/github-action-json-property@release
-        id: acervus_version
+      - name: Read release.json
+        id: release_json
+        uses: ActionsTools/read-json-action@main
         with:
-          path: 'release.json'
-          prop_path: 'version'
-      - name: Read go_version from release.json
-        uses: notiz-dev/github-action-json-property@release
-        id: go_version
-        with:
-          path: 'release.json'
-          prop_path: 'go_version'
+          file_path: 'release.json'
+      - run: |
+          echo ${{ steps.release_json.outputs.version }}
+          echo ${{ steps.release_json.outputs.go_version }}
       - name: Build acervus binary
         uses: wangyoucao577/go-release-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          goversion: "https://dl.google.com/go/go${{ steps.go_version.outputs.prop }}.linux-amd64.tar.gz"
-          release_tag: "v${{ steps.acervus_version.outputs.prop }}"
+          goversion: ${{ steps.release_json.outputs.go_version }}
+          md5sum: true
+          sha256sum: true
+          # goversion: "https://dl.google.com/go/go${{ steps.release_json.outputs.go_version }}.linux-amd64.tar.gz"
+          release_tag: "v${{ steps.release_json.outputs.version }}"
           # if we don't want to use default "go build" command, we can modify it like this:
           # build_command: make
           binary_name: acervus
